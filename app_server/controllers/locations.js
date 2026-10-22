@@ -1,42 +1,41 @@
 var request = require('request');
 
+// 로컬 및 Render 서버 공통 API 주소
 const apiOptions = {
-  server: `http://localhost:${process.env.PORT || 3000}`
+  server: `http://127.0.0.1:${process.env.PORT || 3000}`
 };
-
-if (process.env.NODE_ENV === 'production') {
-  apiOptions.server = 'https://yourapi.com';
-}
 
 const homelist = (req, res) => {
   const path = '/api/locations';
+
   const requestOptions = {
     url: `${apiOptions.server}${path}`,
     method: 'GET',
-    json: {},
-      qs: {
-     lng: 127.2082,
-    lat: 37.0079,
-    maxDistance: 20000
+    json: true,
+    qs: {
+      lng: 127.2082,
+      lat: 37.0079,
+      maxDistance: 20000
     }
   };
 
-  request(
-    requestOptions,
-    (err, response, body) => {
-      let data = [];
+  request(requestOptions, (err, response, body) => {
+    console.log('API error:', err && err.message);
+    console.log('API status:', response && response.statusCode);
 
-      if (!err && response && response.statusCode === 200 && Array.isArray(body) && body.length) {
-        data = body.map((item) => {
-          item.distance = formatDistance(item.distance);
-          return item;
-        });
-      }
+    let data = [];
 
-      renderHomepage(req, res, data);
+    if (!err && response && response.statusCode === 200 && Array.isArray(body)) {
+      data = body.map((item) => {
+        item.distance = formatDistance(item.distance);
+        return item;
+      });
     }
-  );
+
+    renderHomepage(req, res, data);
+  });
 };
+
 
 const formatDistance = (distance) => {
   let thisDistance = 0;
